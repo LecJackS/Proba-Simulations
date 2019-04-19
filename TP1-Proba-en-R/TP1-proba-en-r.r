@@ -95,7 +95,7 @@ funcion_de_acumulacion = function(Nrep, cant_figuritas, cant_sobre, hasta=800, r
   casos_favorables <- 0
   for(i in 1:Nrep){
     # simulo llenado de un album
-    cant <- cuantas_figuritas(cant_figuritas, cant_sobre)
+    cant <- cuantas_figuritas(cant_figuritas, cant_sobre, repetidas)
     if(cant < hasta){
       casos_favorables <- casos_favorables + 1
     }
@@ -112,10 +112,11 @@ percentil = function(Nrep, cant_figuritas, cant_sobre, p=0.9, repetidas=TRUE){
   resultados <- rep(0, Nrep)
   # Guardo los Nrep experimentos
   for(i in 1:Nrep){
-    resultados[i] <- cuantas_figuritas(cant_figuritas, cant_sobre)
+    resultados[i] <- cuantas_figuritas(cant_figuritas, cant_sobre, repetidas)
   }
   # Los ordeno y busco el 90% (p=0.9) del tamaño del vector (idx=900)
   # el cual indica el percentil 0.90
+  resultados = sort(resultados)
   # (me aseguro que en el indice haya un integer)
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PREGUNTAR
   return (resultados[floor(p*Nrep)])
@@ -130,7 +131,7 @@ esperanza_estimada = function(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE){
   for(i in 1:Nrep){
     # el promedio de la suma de los resultados cuando Nrep es grande
     # se acerca al valor de la esperanza, siendo su limite en el infinito
-    cant <- cant + cuantas_figuritas(cant_figuritas, cant_sobre)
+    cant <- cant + cuantas_figuritas(cant_figuritas, cant_sobre, repetidas)
   }
   return(cant/Nrep)
 }
@@ -143,9 +144,9 @@ print(esperanza_estimada(Nrep, cant_figuritas, cant_sobre))
 # eq: V(X)=E((x-u)^2), u=E(X)
 varianza_estimada = function(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE){
   acum <- 0
-  mu <- esperanza_estimada(Nrep, cant_figuritas, cant_sobre)
+  mu <- esperanza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas)
   for(i in 1:Nrep){
-    result <- cuantas_figuritas(cant_figuritas, cant_sobre)
+    result <- cuantas_figuritas(cant_figuritas, cant_sobre, repetidas)
     acum <- acum + (result - mu)^2
   }
   return (acum/Nrep)
@@ -168,3 +169,52 @@ print(esperanza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas=FALSE))
 
 print("D. Varianza estimada de la cantidad de sobres necesarios (sin repetidas): ")
 print(varianza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas=FALSE))
+
+
+# 9 - Do something cool
+# Graficamos los histogramas de #Nrep experimentos con repetidos y sin repetidos
+# En general notamos un ligero desplazamiento del el plot a la izquierda, correspondiente
+# a la estimacion de la esperanza, lo que para este problema significa que si los paquetes
+# de figuritas vienen sin repetidos, es mas facil llenar el album (menos sobres necesarios)
+histograma = function(Nrep, cant_figuritas, cant_sobre, hasta=800){
+  cant <- 0
+  casos_favorables <- 0
+  resultados_con_repetidas <- rep(0, Nrep)
+  resultados_sin_repetidas <- rep(0, Nrep)
+  # Guardo los Nrep experimentos
+  for(i in 1:Nrep){
+    # simulo llenado de un album permitiendo que salgan repetidas y guardo resultado
+    resultados_con_repetidas[i] <- cuantas_figuritas(cant_figuritas, cant_sobre, TRUE)
+    # lo mismo, con sobres de figuritas no repetidas
+    resultados_sin_repetidas[i] <- cuantas_figuritas(cant_figuritas, cant_sobre, FALSE)
+  }
+  
+  plot1 <- hist(resultados_con_repetidas)
+  plot2 <- hist(resultados_sin_repetidas)
+  # lines(c(mu_con_repes,mu_con_repes), col = "blue", lwd = 2)
+  
+  plot( plot1, col=rgb(0,0,1, 1/3), xlim=c(400,2000), ylim=c(0,35),
+        main="Frecuencia de sobres necesarios", xlab="Sobres necesarios para completar el album", ylab="Frecuencia")
+  plot( plot2, col=rgb(1,0,0, 1/3), add=T)
+  # Esperanza(mu) y desvio estandar(sigma) con repetidas
+  mu_con_repes = mean(resultados_con_repetidas)
+  abline(v = mu_con_repes, col=rgb(0,0,1,0.7), lwd = 5)
+  sigma_con_repes = sqrt(var(resultados_con_repetidas))
+  # mu + sigma
+  abline(v = mu_con_repes + sigma_con_repes, col=rgb(0,0,1,1/2), lwd = 1)
+  # mu - sigma
+  abline(v = mu_con_repes - sigma_con_repes, col=rgb(0,0,1,1/2), lwd = 1)
+  # Esperanza sin repetidas
+  mu_sin_repes = mean(resultados_sin_repetidas)
+  abline(v = mu_sin_repes, col=rgb(1,0,0,0.7), lwd = 5)
+  sigma_sin_repes = sqrt(var(resultados_sin_repetidas))
+  # mu + sigma
+  abline(v = mu_sin_repes + sigma_sin_repes, col=rgb(1,0,0,1/2), lwd = 1)
+  # mu - sigma
+  abline(v = mu_sin_repes - sigma_sin_repes, col=rgb(1,0,0,1/2), lwd = 1)
+  # leyenda de todas las lineas y colores en el plot
+  legend(x=1500, y=20, c("Con repetidas", "Sin repetidas", "mu c/repes", "sigma c/repes", "mu s/repes", "sigma s/repes"),
+         cex=.8, col=c(rgb(0,0,1,1/3), rgb(1,0,0,1/3), rgb(1,0,0,0.7), rgb(1,0,0,1/2), rgb(0,0,1,0.7), rgb(1,0,0,1/2)),
+         lty=c(NA,NA,1,1,1,1), lwd=c(10,10,5,1,5,1), pch=c(0,0,NA,NA,NA,NA))
+}
+histograma(1000, cant_figuritas, cant_sobre)
