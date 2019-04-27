@@ -64,7 +64,7 @@ print(otro_sobre)
 cuantas_figuritas = function(cant_figuritas, cant_sobre, repetidas=TRUE){
   album <- rep((FALSE), cant_figuritas)
   cont <- 0
-  while(!esta_lleno(album)){
+  while(!album_lleno(album)){
     sobre <- generar_sobre(cant_figuritas, cant_sobre, repetidas)
     album <- pegar_sobre(album, sobre)
     cont <- cont+1
@@ -86,10 +86,20 @@ cant_figuritas <- 670
 cant_sobre <- 5
 Nrep <- 1000
 
-# Objetivos
+# Objetivos.
+# Observaciones: 
+#    Los algoritmos fueron pensados intentando mantener una correspondencia con la forma de
+#    resolver este tipo de problemas a mano con las herramientas vistas en clase.
+#    Por eso trabajamos directamente con los datos que se iban obteniendo en cada simulacion,
+#    y optamos por evitar guardar todos los valores y trabajar con el array.
+#    De todas formas, para la varianza estimada (D.) fue necesario guardar los valores primero.
 
 # A. La probabilidad de completar el album con 800 sobres o menos
-
+# Observaciones:
+#     Si llamamos X a 'La probabilidad de completar el album con 800 sobres o menos',
+#     lo que nos pide A. es: P(X <= 800), que es F_X(800): la funcion de acumulacion de X.
+#     Definimos la funcion de forma general, y elegimos como valor 800 por defecto como pide
+#     el ejercicio. 
 funcion_de_acumulacion = function(Nrep, cant_figuritas, cant_sobre, hasta=800, repetidas=TRUE){
   cant <- 0
   casos_favorables <- 0
@@ -107,6 +117,10 @@ print(funcion_de_acumulacion(Nrep, cant_figuritas, cant_sobre))
 
 # B. La cantidad de sobres que hacen falta comprar para completar
 #    el album con probabilidad mayor o igual a 0.9
+# Observaciones:
+#     Esto es exactamente el percentil 0.90, por lo que definimos la funcion
+#     de forma general, y agregamos el valor 0.9 por defecto para que responda a lo
+#     pedido por el ejercicio.
 percentil = function(Nrep, cant_figuritas, cant_sobre, p=0.9, repetidas=TRUE){
   #quiero: casos_favorables/Nrep = 0.9 =>  casos_fav = 0.9 * Nrep
   resultados <- rep(0, Nrep)
@@ -117,8 +131,7 @@ percentil = function(Nrep, cant_figuritas, cant_sobre, p=0.9, repetidas=TRUE){
   # Los ordeno y busco el 90% (p=0.9) del tamaño del vector (idx=900)
   # el cual indica el percentil 0.90
   resultados = sort(resultados)
-  # (me aseguro que en el indice haya un integer)
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PREGUNTAR
+  # me aseguro que en el indice haya un integer
   return (resultados[floor(p*Nrep)])
 }
 print("B. Cantidad de sobres para completar el album con 90% de chances: ")
@@ -126,6 +139,10 @@ print(percentil(Nrep, cant_figuritas, cant_sobre))
 
 # C. El valor esperado de la cantidad de sobres necesarios
 #    para completar el album del mundial de Rusia.
+# Observaciones:
+#     A medida que la cantidad de simulaciones tiende a infinito, el promedio de los resultados
+#     obtenidos SERÁ la esperanza de X, ya que corresponde al promedio ponderado de los resultados
+#     obtenidos (el 'ponderado' viene implicito en la distribucion de los resultados obtenidos)
 esperanza_estimada = function(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE){
   cant <- 0
   for(i in 1:Nrep){
@@ -142,6 +159,16 @@ print(esperanza_estimada(Nrep, cant_figuritas, cant_sobre))
 # Usando la ecuacion de la varianza que calcula una a una las diferencias entre 
 # la esperanza de una va. y su valor particular en cada simulacion:
 # eq: V(X)=E((x-u)^2), u=E(X)
+# Observaciones:
+#     Primero definimos la varianza de la forma pedida.
+#     Para eso simulamos Nrep experimentos y obtenemos SU esperanza estimada (mu).
+#     Usamos esta esperanza para calcular la varianza de una nueva serie de Nrep experimentos.
+#     Como el limite de la esperanza estimada para Nrep tendiendo a infinito es el mismo para
+#     cualquier serie de experimentos, es valido que usemos el mu de una serie, para calcular
+#     la esperanza de otra.
+#     Si la cantidad de experimentos estuviera limitada a una cantidad mucho menor, deberiamos
+#     modificar el algoritmo para que calcule la varianza a partir de LOS MISMOS experimentos
+#     que fueron usados para calcular la esperanza.
 varianza_estimada = function(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE){
   acum <- 0
   mu <- esperanza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas)
@@ -151,8 +178,14 @@ varianza_estimada = function(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE){
   }
   return (acum/Nrep)
 }
-print("D. Varianza estimada de la cantidad de sobres necesarios: ")
-print(varianza_estimada(Nrep, cant_figuritas, cant_sobre))
+
+desvio_estandar = function(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE){
+  varianza <- varianza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE)
+  # devuelve la raiz cuadrada de la varianza
+  return (sqrt(varianza)
+}
+print("D. Desvio estandar de la cantidad de sobres necesarios: ")
+print(desvio_estandar(Nrep, cant_figuritas, cant_sobre))
 
 # 8 - Repetir lo mismo que en 7, pero los sobres traen figuritas no repetidas
 # Para eso agregamos una variable booleana en las funciones, para que el proceso
@@ -167,9 +200,8 @@ print(percentil(Nrep, cant_figuritas, cant_sobre, p=0.9, repetidas=FALSE))
 print("C. Valor esperado de la cantidad de sobres necesarios (sin repetidas): ")
 print(esperanza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas=FALSE))
 
-print("D. Varianza estimada de la cantidad de sobres necesarios (sin repetidas): ")
-print(varianza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas=FALSE))
-
+print("D. Desvio estandar de la cantidad de sobres necesarios (sin repetidas): ")
+print(desvio_estandar(Nrep, cant_figuritas, cant_sobre, repetidas=FALSE))
 
 # 9 - Do something cool
 # Graficamos los histogramas de #Nrep experimentos con repetidos y sin repetidos
