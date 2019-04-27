@@ -22,7 +22,7 @@ album_lleno = function (album) {
 #     Dados cant de figuritas por album y sobre,
 #     devuelve un sobre aleatorio (incluyendo repetidas)
 generar_sobre = function(cant_figuritas, cant_sobre, repetidas=TRUE){
-  return(sample(1:cant_figuritas, cant_sobre, repetidas))
+  return(sample(1:cant_figuritas, cant_sobre, replace=repetidas))
 }
 
 # 3.b - Genero un sobre de 3 figuritas para un album de 6, y pego sus figuritas
@@ -173,29 +173,30 @@ print(varianza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas=FALSE))
 
 # 9 - Do something cool
 # Graficamos los histogramas de #Nrep experimentos con repetidos y sin repetidos
-# En general notamos un ligero desplazamiento del el plot a la izquierda, correspondiente
-# a la estimacion de la esperanza, lo que para este problema significa que si los paquetes
+# En general notamos un ligero desplazamiento del plot sin repetidos hacia la izquierda, 
+# correspondiente con la estimacion de la esperanza, lo que para este problema significa que si los paquetes
 # de figuritas vienen sin repetidos, es mas facil llenar el album (menos sobres necesarios)
+# Con sobres de mayor cantidad de figuritas, esta diferencia es mas notable.
 histograma = function(Nrep, cant_figuritas, cant_sobre, hasta=800){
-  cant <- 0
-  casos_favorables <- 0
   resultados_con_repetidas <- rep(0, Nrep)
   resultados_sin_repetidas <- rep(0, Nrep)
   # Guardo los Nrep experimentos
   for(i in 1:Nrep){
     # simulo llenado de un album permitiendo que salgan repetidas y guardo resultado
-    resultados_con_repetidas[i] <- cuantas_figuritas(cant_figuritas, cant_sobre, TRUE)
+    resultados_con_repetidas[i] <- cuantas_figuritas(cant_figuritas, cant_sobre, repetidas=TRUE)
     # lo mismo, con sobres de figuritas no repetidas
-    resultados_sin_repetidas[i] <- cuantas_figuritas(cant_figuritas, cant_sobre, FALSE)
+    resultados_sin_repetidas[i] <- cuantas_figuritas(cant_figuritas, cant_sobre, repetidas=FALSE)
   }
-  
+  #Armo un histograma de los resultados con repetidas
   plot1 <- hist(resultados_con_repetidas)
+  #Armo otro histograma pero con los casos sin repetidas
   plot2 <- hist(resultados_sin_repetidas)
-  # lines(c(mu_con_repes,mu_con_repes), col = "blue", lwd = 2)
-  
-  plot( plot1, col=rgb(0,0,1, 1/3), xlim=c(400,2000), ylim=c(0,35),
-        main="Frecuencia de sobres necesarios", xlab="Sobres necesarios para completar el album", ylab="Frecuencia")
-  plot( plot2, col=rgb(1,0,0, 1/3), add=T)
+  # Agrego hists a un mismo plot
+  plot(plot1, col=rgb(0,0,1, 1/3),
+        main="Frecuencia de sobres necesarios",
+        xlab="Sobres necesarios para completar el album",
+        ylab="Frecuencia")
+  plot(plot2, col=rgb(1,0,0, 1/3), add=T)
   # Esperanza(mu) y desvio estandar(sigma) con repetidas
   mu_con_repes = mean(resultados_con_repetidas)
   abline(v = mu_con_repes, col=rgb(0,0,1,0.7), lwd = 5)
@@ -213,8 +214,20 @@ histograma = function(Nrep, cant_figuritas, cant_sobre, hasta=800){
   # mu - sigma
   abline(v = mu_sin_repes - sigma_sin_repes, col=rgb(1,0,0,1/2), lwd = 1)
   # leyenda de todas las lineas y colores en el plot
-  legend(x=1500, y=20, c("Con repetidas", "Sin repetidas", "mu c/repes", "sigma c/repes", "mu s/repes", "sigma s/repes"),
-         cex=.8, col=c(rgb(0,0,1,1/3), rgb(1,0,0,1/3), rgb(1,0,0,0.7), rgb(1,0,0,1/2), rgb(0,0,1,0.7), rgb(1,0,0,1/2)),
+  legend('topright', c("Con repetidas", "Sin repetidas", "mu c/repes", "mu+/-sigma c/repes", "mu s/repes", "mu+/-sigma s/repes"),
+         cex=.8, col=c(rgb(0,0,1,1/3), rgb(1,0,0,1/3), rgb(0,0,1,0.7), rgb(0,0,1,1/2), rgb(1,0,0,0.7), rgb(1,0,0,1/2)),
          lty=c(NA,NA,1,1,1,1), lwd=c(10,10,5,1,5,1), pch=c(0,0,NA,NA,NA,NA))
+  # marcas del eje x
+  # axis(1, pch=18, las=2, at=c(mu_con_repes, mu_sin_repes,
+  #              round(mu_con_repes + sigma_con_repes,2), round(mu_con_repes - sigma_con_repes,2),
+  #              round(mu_sin_repes + sigma_sin_repes,2), round(mu_sin_repes - sigma_sin_repes)))
+  text(x=round(mu_con_repes, 2), y=-0.3, cex=0.7,pos=3, c(round(mu_con_repes, 2)))
+  text(x=round(mu_con_repes + sigma_con_repes,2), y=-0.3, cex=0.7,pos=3, c(round(mu_con_repes + sigma_con_repes, 2)))
+  text(x=round(mu_con_repes - sigma_con_repes,2), y=-0.3, cex=0.7,pos=3, c(round(mu_con_repes - sigma_con_repes, 2)))
+  text(x=round(mu_sin_repes, 2), y=0.5, cex=0.7,pos=1, c(round(mu_sin_repes, 2)))
+  text(x=round(mu_sin_repes + sigma_sin_repes,2), y=0.5, cex=0.7,pos=1, c(round(mu_sin_repes + sigma_sin_repes, 2)))
+  text(x=round(mu_sin_repes - sigma_sin_repes,2), y=0.5, cex=0.7,pos=1, c(round(mu_sin_repes - sigma_sin_repes, 2)))
 }
+cant_figuritas <- 670
+cant_sobre <- 5
 histograma(1000, cant_figuritas, cant_sobre)
