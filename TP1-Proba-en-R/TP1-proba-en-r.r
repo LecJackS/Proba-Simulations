@@ -55,8 +55,12 @@ album <- pegar_sobre(album, sobre)
 otro_sobre <- generar_sobre(cant_figuritas, cant_sobre)
 album <- pegar_sobre(album, otro_sobre)
 # Imprima el album en pantalla y compruebe si las ha pegado correctamente.
+print("4b. Imprima el album en pantalla y compruebe si las ha pegado correctamente")
+print("Album:")
 print(album)
+print("Sobre:")
 print(sobre)
+print("Otro sobre:")
 print(otro_sobre)
 
 # 5 - Dado cant de figuritas por sobre y album, simula el completado de
@@ -73,9 +77,11 @@ cuantas_figuritas = function(cant_figuritas, cant_sobre, repetidas=TRUE){
 }
 
 # 6 - 3 simulaciones de completado de un album de 6 figuritas con sobres de 1.
-cuantas_figuritas(6,1)
-cuantas_figuritas(6,1)
-cuantas_figuritas(6,1)
+print("Tres simulaciones de completado de un album de 6 figuritas con sobres de 1.")
+print("Sobres necesarios para completar el album en cada simulacion:")
+print(cuantas_figuritas(6,1))
+print(cuantas_figuritas(6,1))
+print(cuantas_figuritas(6,1))
 # No son siempre las mismas, pues la cantidad de sobres necesarios depende de
 # las figuritas que nos toquen, llenandolo mas rapido si suelen ser diferentes,
 # y mas lento contra mas repetidas.
@@ -182,7 +188,7 @@ varianza_estimada = function(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE){
 desvio_estandar = function(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE){
   varianza <- varianza_estimada(Nrep, cant_figuritas, cant_sobre, repetidas=TRUE)
   # devuelve la raiz cuadrada de la varianza
-  return (sqrt(varianza)
+  return (sqrt(varianza))
 }
 print("D. Desvio estandar de la cantidad de sobres necesarios: ")
 print(desvio_estandar(Nrep, cant_figuritas, cant_sobre))
@@ -262,4 +268,6 @@ histograma = function(Nrep, cant_figuritas, cant_sobre, hasta=800){
 }
 cant_figuritas <- 670
 cant_sobre <- 5
+print("Ejercicio 9.")
+print("Mostrando histograma de los experimentos obtenidos:")
 histograma(1000, cant_figuritas, cant_sobre)
